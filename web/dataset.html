@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>memdb-oracle · dataset</title>
+<link rel="icon" type="image/png" href="/logo.png">
+<style>
+:root{--bg:#f7f7f5;--fg:#1c1c1a;--muted:#6b6b66;--card:#fff;--line:#e3e3df;--accent:#2f8c72}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#141413;--fg:#ececea;--muted:#9a9a94;--card:#1d1d1b;--line:#2c2c29;--accent:#5cc7a5}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:960px;margin:0 auto;padding:24px 16px 60px}h1{font-size:20px;margin:0}h2{font-size:16px;margin:26px 0 8px}
+header{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line)}header img{height:44px;border-radius:6px;background:#fff;padding:2px}
+p.sub,.muted{color:var(--muted)}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--card);display:block;overflow-x:auto}th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}th{background:var(--bg)}
+code,pre{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}pre{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 10px;overflow-x:auto}
+.kpi{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}.kpi div{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 14px;min-width:150px}.kpi b{display:block;font-size:22px}
+</style></head><body><main>
+<header><a href="/"><img src="/logo.png" alt="Two Techies"></a><div><h1>The dataset behind memdb-oracle</h1><div class="muted">Sanity project <code>ynsa3nyp</code>, dataset <code>production</code>, public. Everything below is read live from the Sanity API with no token. <a href="/">← back to the agent</a></div></div></header>
+<p class="sub">One <code>benchmarkRun</code> document per measured run, with every knob that moved the number as a field, plus <code>engine</code>, <code>finding</code> and <code>benchmarkSession</code> documents. The agent answers numeric questions with GROQ over these; prose comes from a Sanity Context Knowledge Base built from the write-ups and the vendors' own pages.</p>
+<div class="kpi" id="kpi"></div>
+<h2>Runs per engine</h2><table id="engines"><thead><tr><th>Engine</th><th>Version tested</th><th>Threading model</th><th>Runs</th><th>Notes</th></tr></thead><tbody></tbody></table>
+<h2>Headline findings (with the caveat the agent must repeat)</h2><table id="findings"><thead><tr><th>Finding</th><th>Caveat</th><th>Vendor claim it is compared with</th></tr></thead><tbody></tbody></table>
+<h2>What one run looks like</h2><pre id="sample">loading…</pre>
+<h2>Query it yourself</h2>
+<p>Any GROQ works against the public endpoint. Example, the headline configuration:</p>
+<pre id="groq"></pre>
+<p class="muted">Raw JSON for this page: <a id="raw" href="#" target="_blank" rel="noopener">overview query</a> · Studio (members only): <a href="https://memdb-oracle.sanity.studio/" target="_blank" rel="noopener">memdb-oracle.sanity.studio</a> · Source CSVs and harness: <a href="https://github.com/sunnysahijwani/dragonfly-redis-valkey-benchmark" target="_blank" rel="noopener">GitHub</a></p>
+</main>
+<script>
+const PUBLIC='https://ynsa3nyp.api.sanity.io/v2025-08-15/data/query/production?query=';
+const API='/api/query?query='; // same-origin proxy of the public endpoint (browser CORS)
+const q=s=>fetch(API+encodeURIComponent(s)).then(r=>r.json()).then(j=>j.result);
+const esc=s=>(s??'').toString();
+const overview='{"runs":count(*[_type=="benchmarkRun"]),"sessions":*[_type=="benchmarkSession"]|order(number asc){number,label},"engines":*[_type=="engine"]|order(name asc){name,versionTested,threadingModel,notes,"runs":count(*[_type=="benchmarkRun"&&references(^._id)])},"findings":*[_type=="finding"]|order(slug asc){title,caveat,vendorClaim,vendorClaimUrl,sourceUrl},"sample":*[_type=="benchmarkRun"&&engineName=="dragonfly"&&coresUsed==48&&ratio=="1:10"&&dataBytes==100&&pipeline==16][0]}';
+const headline='*[_type=="benchmarkRun" && coresUsed==48 && ratio=="1:10" && dataBytes==100 && pipeline==16]\n  | order(engineName asc, mode asc, rep asc)\n  {_id, session, engineName, mode, rep, opsPerSec, p50Ms, p99Ms, hitRate}';
+document.getElementById('groq').textContent=headline+'\n\n→ '+PUBLIC+encodeURIComponent(headline.replace(/\n\s*/g,' '));
+document.getElementById('raw').href=PUBLIC+encodeURIComponent(overview);
+q(overview).then(d=>{
+  const k=document.getElementById('kpi');
+  [['measured runs',d.runs],['engines',d.engines.length],['findings',d.findings.length],['capture sessions',d.sessions.length]].forEach(([l,v])=>{const x=document.createElement('div');x.innerHTML='<b></b>'+esc(l);x.querySelector('b').textContent=v;k.appendChild(x);});
+  const et=document.querySelector('#engines tbody');
+  d.engines.forEach(e=>{const tr=document.createElement('tr');[e.name,e.versionTested,e.threadingModel,e.runs,e.notes].forEach(v=>{const td=document.createElement('td');td.textContent=esc(v);tr.appendChild(td);});et.appendChild(tr);});
+  const ft=document.querySelector('#findings tbody');
+  d.findings.forEach(f=>{const tr=document.createElement('tr');const a=document.createElement('td');const link=document.createElement('a');link.href=f.sourceUrl||'#';link.target='_blank';link.rel='noopener';link.textContent=f.title;a.appendChild(link);tr.appendChild(a);
+    const c=document.createElement('td');c.textContent=esc(f.caveat);tr.appendChild(c);
+    const v=document.createElement('td');if(f.vendorClaim){const vl=document.createElement('a');vl.href=f.vendorClaimUrl||'#';vl.target='_blank';vl.rel='noopener';vl.textContent='“'+f.vendorClaim+'”';v.appendChild(vl);}else v.textContent='—';tr.appendChild(v);ft.appendChild(tr);});
+  document.getElementById('sample').textContent=JSON.stringify(d.sample,null,2);
+}).catch(e=>{document.getElementById('kpi').textContent='Could not load the dataset: '+e.message;});
+</script></body></html>

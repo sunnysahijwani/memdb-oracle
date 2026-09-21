@@ -9,6 +9,7 @@ import { ask, type Turn } from "./oracle.js";
 const here = dirname(fileURLToPath(import.meta.url));
 const page = readFileSync(resolve(here, "..", "web", "index.html"));
 const logo = readFileSync(resolve(here, "..", "web", "logo.png"));
+const datasetPage = readFileSync(resolve(here, "..", "web", "dataset.html"));
 const PER_IP = Number(process.env.RATE_PER_IP_PER_DAY ?? 30);
 const GLOBAL = Number(process.env.RATE_GLOBAL_PER_DAY ?? 400);
 const PORT = Number(process.env.PORT ?? 8787);
@@ -38,6 +39,19 @@ createServer(async (req, res) => {
     res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-cache" }); return res.end(req.method === "HEAD" ? undefined : page);
   }
   if ((req.method === "GET" || req.method === "HEAD") && path === "/healthz") return json(res, 200, { ok: true });
+  // Same-origin proxy for the PUBLIC dataset (no token) — browsers cannot call the Sanity API cross-origin without a CORS entry.
+  if (req.method === "GET" && path === "/api/query") {
+    const groq = new URL(req.url ?? "/", "http://x").searchParams.get("query") ?? "";
+    if (!groq || groq.length > 4000) return json(res, 400, { error: "query required (≤4000 chars)" });
+    try {
+      const u = `https://${process.env.SANITY_PROJECT_ID ?? "ynsa3nyp"}.api.sanity.io/v2025-08-15/data/query/${process.env.SANITY_DATASET ?? "production"}?query=${encodeURIComponent(groq)}`;
+      const r = await fetch(u); const text = await r.text();
+      res.writeHead(r.status, { "content-type": "application/json", "cache-control": "public, max-age=300" }); return res.end(text);
+    } catch (e: any) { return json(res, 502, { error: e?.message ?? "upstream error" }); }
+  }
+  if ((req.method === "GET" || req.method === "HEAD") && path === "/dataset") {
+    res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-cache" }); return res.end(req.method === "HEAD" ? undefined : datasetPage);
+  }
   if ((req.method === "GET" || req.method === "HEAD") && path === "/logo.png") {
     res.writeHead(200, { "content-type": "image/png", "cache-control": "public, max-age=86400" }); return res.end(req.method === "HEAD" ? undefined : logo);
   }
