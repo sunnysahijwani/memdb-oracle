@@ -60,7 +60,7 @@ Three curated answers from the session log:
 
 ## Code
 
-**TODO: https://github.com/sunnysahijwani/memdb-oracle** (MIT)
+**https://github.com/sunnysahijwani/memdb-oracle** (MIT)
 
 The whole agent is one file plus a system prompt. It uses the Claude API's MCP connector, so Sanity's Context MCP is called server-side and there is no MCP client code at all: one API call per turn, streamed to the page over server-sent events. The repo also holds the schema, the CSV importer, the golden-number script and 13 tests (6 offline, 7 live against the real endpoints).
 

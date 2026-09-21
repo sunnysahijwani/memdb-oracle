@@ -32,11 +32,12 @@ const json = (res: any, code: number, body: unknown) => {
 
 createServer(async (req, res) => {
   const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress || "?";
-  if (req.method === "GET" && (req.url === "/" || req.url === "/index.html")) {
-    res.writeHead(200, { "content-type": "text/html; charset=utf-8" }); return res.end(page);
+  const path = new URL(req.url ?? "/", "http://x").pathname; // ignore ?query
+  if ((req.method === "GET" || req.method === "HEAD") && (path === "/" || path === "/index.html")) {
+    res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-cache" }); return res.end(req.method === "HEAD" ? undefined : page);
   }
-  if (req.method === "GET" && req.url === "/healthz") return json(res, 200, { ok: true });
-  if (req.method === "POST" && req.url === "/api/ask") {
+  if ((req.method === "GET" || req.method === "HEAD") && path === "/healthz") return json(res, 200, { ok: true });
+  if (req.method === "POST" && path === "/api/ask") {
     let raw = "";
     for await (const c of req) { raw += c; if (raw.length > 200_000) return json(res, 413, { error: "too large" }); }
     let body: { question?: string; history?: Turn[] };
