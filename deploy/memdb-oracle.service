@@ -1,0 +1,24 @@
+# /etc/systemd/system/memdb-oracle.service
+[Unit]
+Description=memdb-oracle chat (Sanity Context agent)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=memdb
+Group=memdb
+WorkingDirectory=/var/www/memdb-oracle
+Environment=NODE_ENV=production
+Environment=PORT=8787
+ExecStart=/usr/bin/node --import tsx agent/server.ts
+Restart=always
+RestartSec=3
+MemoryMax=400M
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

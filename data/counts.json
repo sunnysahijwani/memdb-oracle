@@ -1,0 +1,14 @@
+{
+  "runs": 478,
+  "skippedRows": 147,
+  "documents": 497,
+  "byEngineMode": {
+    "s1/dragonfly/single": 160,
+    "s1/redis/cluster": 80,
+    "s1/valkey/cluster": 80,
+    "s1/redis/cluster-sat": 15,
+    "s1/valkey/cluster-sat": 15,
+    "s2/keydb/single": 48,
+    "s2/garnet/single": 80
+  }
+}

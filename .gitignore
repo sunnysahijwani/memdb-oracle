@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+data/documents.ndjson
+docs/session-log.jsonl
+sanity/node_modules/
+sanity/dist/
+sanity/.sanity/
+.DS_Store
+PLAN.md
+tests/leak-patterns.txt

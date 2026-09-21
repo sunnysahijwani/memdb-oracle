@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>memdb-oracle</title>
+<style>
+:root{--bg:#f7f7f5;--fg:#1c1c1a;--muted:#6b6b66;--card:#fff;--line:#e3e3df;--accent:#2f8c72}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#141413;--fg:#ececea;--muted:#9a9a94;--card:#1d1d1b;--line:#2c2c29;--accent:#5cc7a5}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:860px;margin:0 auto;padding:24px 16px 120px}h1{font-size:20px;margin:0 0 4px}p.sub{color:var(--muted);margin:0 0 20px}
+.msg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0;white-space:pre-wrap;overflow-x:auto}
+.msg.user{border-left:3px solid var(--accent)}.msg .who{font-size:12px;color:var(--muted);margin-bottom:6px}
+details{margin-top:8px;font-size:13px;color:var(--muted)}code,pre{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}
+form{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:12px 16px}
+.row{max-width:860px;margin:0 auto;display:flex;gap:8px}input{flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);font-size:15px}
+button{padding:10px 16px;border:0;border-radius:8px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer}button:disabled{opacity:.5}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}.chips button{background:var(--card);color:var(--fg);border:1px solid var(--line);font-weight:500;font-size:13px;padding:6px 10px}
+.msg.bot{white-space:normal}.msg.bot h1,.msg.bot h2,.msg.bot h3{font-size:15px;margin:14px 0 6px}.msg.bot p{margin:8px 0}.msg.bot table{border-collapse:collapse;margin:8px 0;font-size:14px;display:block;overflow-x:auto}.msg.bot th,.msg.bot td{border:1px solid var(--line);padding:4px 8px;text-align:left}.msg.bot pre{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;overflow-x:auto}.msg.bot code{background:var(--bg);padding:1px 4px;border-radius:4px}.msg.bot pre code{background:none;padding:0}.msg.bot ul,.msg.bot ol{padding-left:22px}.msg.bot hr{border:0;border-top:1px solid var(--line);margin:12px 0}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.7/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js"></script>
+</head><body><main>
+<h1>memdb-oracle</h1>
+<p class="sub">Answers about Redis, Valkey, Dragonfly, KeyDB and Garnet from 478 measured benchmark runs (Sanity dataset, GROQ) and a Knowledge Base that shows vendor claims next to measurements. Every answer ends with the GROQ it ran.</p>
+<div class="chips" id="chips"></div>
+<div id="log"></div>
+</main>
+<form id="f"><div class="row"><input id="q" placeholder="e.g. At 16 cores, read-heavy, pipeline 16, which has the lower p99: Dragonfly or Redis cluster?" autocomplete="off"><button id="b">Ask</button></div></form>
+<script>
+const examples=["Fastest engine at 48 cores, read-heavy, pipeline 16?","Is Dragonfly 25x faster than Redis?","What does 'client-limited' mean in the Garnet result?","Is Redis single-threaded?","What is pipelining and why does it change the numbers?","Which is better for my Postgres workload?"];
+const chips=document.getElementById('chips'),log=document.getElementById('log'),f=document.getElementById('f'),q=document.getElementById('q'),b=document.getElementById('b');
+let history=[];
+examples.forEach(e=>{const x=document.createElement('button');x.type='button';x.textContent=e;x.onclick=()=>{q.value=e;f.requestSubmit()};chips.appendChild(x)});
+function render(text){try{if(window.marked&&window.DOMPurify){const el=document.createElement('div');el.innerHTML=DOMPurify.sanitize(marked.parse(text,{gfm:true,breaks:false}));return el}}catch(e){}return document.createTextNode(text)}
+function add(who,text,trace){const d=document.createElement('div');d.className='msg '+who;const w=document.createElement('div');w.className='who';w.textContent=who==='user'?'you':'memdb-oracle';d.appendChild(w);d.appendChild(who==='bot'?render(text):document.createTextNode(text));
+ if(trace&&trace.length){const det=document.createElement('details');const s=document.createElement('summary');s.textContent=trace.length+' tool call(s) to Sanity Context';det.appendChild(s);const pre=document.createElement('pre');pre.textContent=trace.map(t=>'['+t.server+'] '+t.tool+(t.isError?' (ERROR)':'')+'\n'+JSON.stringify(t.input,null,1)).join('\n\n');det.appendChild(pre);d.appendChild(det)}
+ log.appendChild(d);window.scrollTo(0,document.body.scrollHeight);return d}
+f.onsubmit=async ev=>{ev.preventDefault();const text=q.value.trim();if(!text)return;q.value='';b.disabled=true;add('user',text);
+ const d=add('bot','');const body=d.lastChild;const status=document.createElement('div');status.className='who';status.textContent='connecting…';d.insertBefore(status,body);
+ let buf='',live='',tools=[];const paint=()=>{const el=render(live);body.replaceWith(el);d.lastChild!==el&&d.appendChild(el);};
+ const handle=(event,data)=>{if(event==='tool'){tools.push(data);status.textContent='querying Sanity Context: '+data.server+' / '+data.tool+' ('+tools.length+')';live='';paint();}
+  else if(event==='text'){live+=data.text;if(tools.length)status.textContent='writing…';paint();}
+  else if(event==='done'){history=data.history||[];status.remove();d.replaceWith(add('bot',data.answer,data.trace));}
+  else if(event==='error'){status.remove();live='⚠ '+data.error;paint();}};
+ try{const r=await fetch('/api/ask',{method:'POST',headers:{'content-type':'application/json','accept':'text/event-stream'},body:JSON.stringify({question:text,history})});
+  if(!r.ok||!r.body){const j=await r.json().catch(()=>({error:r.status}));status.remove();live='⚠ '+(j.error||r.status);paint();}
+  else{const rd=r.body.getReader(),dec=new TextDecoder();for(;;){const {value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});
+   let i;while((i=buf.indexOf('\n\n'))>=0){const chunk=buf.slice(0,i);buf=buf.slice(i+2);let ev='message',data='';for(const line of chunk.split('\n')){if(line.startsWith('event:'))ev=line.slice(6).trim();else if(line.startsWith('data:'))data+=line.slice(5).trim();}
+    if(data){try{handle(ev,JSON.parse(data))}catch(e){}}}}}}
+ catch(e){status.remove();live='⚠ '+e.message;paint();}finally{b.disabled=false;q.focus();window.scrollTo(0,document.body.scrollHeight)}};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js"></script>
+</head><body><main>
+<h1>memdb-oracle</h1>
+<p class="sub">Answers about Redis, Valkey, Dragonfly, KeyDB and Garnet from 478 measured benchmark runs (Sanity dataset, GROQ) and a Knowledge Base that shows vendor claims next to measurements. Every answer ends with the GROQ it ran.</p>
+<div class="chips" id="chips"></div>
+<div id="log"></div>
+</main>
+<form id="f"><div class="row"><input id="q" placeholder="e.g. At 16 cores, read-heavy, pipeline 16, which has the lower p99: Dragonfly or Redis cluster?" autocomplete="off"><button id="b">Ask</button></div></form>
+<script>
+const examples=["Fastest engine at 48 cores, read-heavy, pipeline 16?","Is Dragonfly 25x faster than Redis?","What does 'client-limited' mean in the Garnet result?","Is Redis single-threaded?","What is pipelining and why does it change the numbers?","Which is better for my Postgres workload?"];
+const chips=document.getElementById('chips'),log=document.getElementById('log'),f=document.getElementById('f'),q=document.getElementById('q'),b=document.getElementById('b');
+let history=[];
+examples.forEach(e=>{const x=document.createElement('button');x.type='button';x.textContent=e;x.onclick=()=>{q.value=e;f.requestSubmit()};chips.appendChild(x)});
+function render(text){try{if(window.marked&&window.DOMPurify){const el=document.createElement('div');el.innerHTML=DOMPurify.sanitize(marked.parse(text,{gfm:true,breaks:false}));return el}}catch(e){}return document.createTextNode(text)}
+function add(who,text,trace){const d=document.createElement('div');d.className='msg '+who;const w=document.createElement('div');w.className='who';w.textContent=who==='user'?'you':'memdb-oracle';d.appendChild(w);d.appendChild(who==='bot'?render(text):document.createTextNode(text));
+ if(trace&&trace.length){const det=document.createElement('details');const s=document.createElement('summary');s.textContent=trace.length+' tool call(s) to Sanity Context';det.appendChild(s);const pre=document.createElement('pre');pre.textContent=trace.map(t=>'['+t.server+'] '+t.tool+(t.isError?' (ERROR)':'')+'\n'+JSON.stringify(t.input,null,1)).join('\n\n');det.appendChild(pre);d.appendChild(det)}
+ log.appendChild(d);window.scrollTo(0,document.body.scrollHeight);return d}
+f.onsubmit=async ev=>{ev.preventDefault();const text=q.value.trim();if(!text)return;q.value='';b.disabled=true;add('user',text);const w=add('bot','thinking…');
+ try{const r=await fetch('/api/ask',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({question:text,history})});const j=await r.json();w.remove();
+  if(!r.ok){add('bot','⚠ '+(j.error||r.status));}else{history=j.history||[];add('bot',j.answer,j.trace)}}catch(e){w.remove();add('bot','⚠ '+e.message)}finally{b.disabled=false;q.focus()}};
+</script></body></html>

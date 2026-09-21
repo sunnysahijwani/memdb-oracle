@@ -1,0 +1,31 @@
+{
+  "name": "memdb-oracle",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Benchmark-grounded in-memory database agent on Sanity Context (GROQ dataset + Knowledge Base) — Sanity Challenge Path One entry",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "import:build": "tsx scripts/import-runs.ts",
+    "import:push": "cd sanity && npx sanity dataset import ../data/documents.ndjson production --replace",
+    "golden": "python3 tests/golden.py",
+    "ask": "tsx agent/cli.ts",
+    "serve": "tsx agent/server.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "leakcheck": "bash tests/leakcheck.sh",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.127.0",
+    "csv-parse": "^7.0.2",
+    "dotenv": "^18.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.23.13",
+    "typescript": "^5.6.0"
+  }
+}

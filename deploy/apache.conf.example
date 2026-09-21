@@ -1,0 +1,16 @@
+# /etc/apache2/sites-available/memdb.example.com.conf — replace the hostname, then:
+#   a2enmod proxy proxy_http headers ssl
+#   a2ensite memdb.example.com && apachectl configtest && systemctl reload apache2
+#   certbot --apache -d memdb.example.com
+<VirtualHost *:80>
+    ServerName memdb.example.com
+    ProxyPreserveHost On
+    ProxyRequests Off
+    ProxyTimeout 300
+    # flushpackets=on is what lets server-sent events stream through Apache
+    ProxyPass        / http://127.0.0.1:8787/ flushpackets=on retry=0 timeout=300
+    ProxyPassReverse / http://127.0.0.1:8787/
+    RequestHeader set X-Forwarded-Proto "http"
+    ErrorLog ${APACHE_LOG_DIR}/memdb-error.log
+    CustomLog ${APACHE_LOG_DIR}/memdb-access.log combined
+</VirtualHost>

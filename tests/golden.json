@@ -1,0 +1,65 @@
+{
+  "q1_fastest_48c_readheavy_p16": {
+    "dragonfly": 15473658.395,
+    "redis_cluster_realistic": 4578516.24,
+    "redis_cluster_sat_ceiling": 40576639.07,
+    "valkey_cluster_realistic": 4496839.105,
+    "valkey_cluster_sat_ceiling": 40183221.4,
+    "run_ids_dragonfly": [
+      "run-s1-20260901-083406-dragonfly-single-48c-p16-1-10-d100-rep1",
+      "run-s1-20260901-083406-dragonfly-single-48c-p16-1-10-d100-rep2"
+    ]
+  },
+  "q2_p99_16c_df_vs_redis_cluster": {
+    "dragonfly_p99": 4.847,
+    "redis_cluster_p99": 59.007
+  },
+  "q3_overtake_cores": {
+    "4": {
+      "dragonfly": 2042273.345,
+      "redis_cluster": 3227767.565
+    },
+    "8": {
+      "dragonfly": 3668546.295,
+      "redis_cluster": 5027713.545
+    },
+    "16": {
+      "dragonfly": 6471163.67,
+      "redis_cluster": 4973277.87
+    },
+    "24": {
+      "dragonfly": 9047448.81,
+      "redis_cluster": 4812971.68
+    },
+    "48": {
+      "dragonfly": 15473658.395,
+      "redis_cluster": 4578516.24
+    }
+  },
+  "q5_garnet_vs_dragonfly": {
+    "garnet_48c_s2": 21356216.815,
+    "garnet_24c_s2": 19008655.975,
+    "dragonfly_48c_s1": 15473658.395,
+    "required_phrases": [
+      "client-limited",
+      "at least"
+    ]
+  },
+  "q6_keydb": {
+    "4": 412877.635,
+    "8": 568535.855,
+    "16": 635598.77
+  },
+  "q7_valkey_pipeline_24c": {
+    "p1": 1480605.365,
+    "p16": 4791560.42
+  },
+  "q14_nonexistent_combo": {
+    "key": "redis single 8c pipeline 64",
+    "exists": false
+  },
+  "totals": {
+    "runs": 478,
+    "groups": 254
+  }
+}

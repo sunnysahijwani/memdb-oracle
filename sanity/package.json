@@ -1,0 +1,8 @@
+{
+  "name": "memdb-oracle-studio",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": { "dev": "sanity dev", "build": "sanity build", "deploy": "sanity deploy", "import": "sanity dataset import ../data/documents.ndjson production --replace" },
+  "dependencies": { "sanity": "^6.15.0", "react": "^19.0.0", "react-dom": "^19.0.0", "styled-components": "^6.1.0" },
+  "devDependencies": { "typescript": "^5.6.0", "@types/react": "^19.0.0" }
+}
