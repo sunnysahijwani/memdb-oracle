@@ -10,3 +10,4 @@ sanity/.sanity/
 .DS_Store
 PLAN.md
 tests/leak-patterns.txt
+docs/POST-DRAFT.md

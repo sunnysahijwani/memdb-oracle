@@ -8,6 +8,7 @@ import { ask, type Turn } from "./oracle.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const page = readFileSync(resolve(here, "..", "web", "index.html"));
+const logo = readFileSync(resolve(here, "..", "web", "logo.png"));
 const PER_IP = Number(process.env.RATE_PER_IP_PER_DAY ?? 30);
 const GLOBAL = Number(process.env.RATE_GLOBAL_PER_DAY ?? 400);
 const PORT = Number(process.env.PORT ?? 8787);
@@ -37,6 +38,9 @@ createServer(async (req, res) => {
     res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-cache" }); return res.end(req.method === "HEAD" ? undefined : page);
   }
   if ((req.method === "GET" || req.method === "HEAD") && path === "/healthz") return json(res, 200, { ok: true });
+  if ((req.method === "GET" || req.method === "HEAD") && path === "/logo.png") {
+    res.writeHead(200, { "content-type": "image/png", "cache-control": "public, max-age=86400" }); return res.end(req.method === "HEAD" ? undefined : logo);
+  }
   if (req.method === "POST" && path === "/api/ask") {
     let raw = "";
     for await (const c of req) { raw += c; if (raw.length > 200_000) return json(res, 413, { error: "too large" }); }

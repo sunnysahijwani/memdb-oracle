@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>memdb-oracle</title>
+<title>memdb-oracle · Two Techies</title>
+<link rel="icon" type="image/png" href="/logo.png">
 <style>
 :root{--bg:#f7f7f5;--fg:#1c1c1a;--muted:#6b6b66;--card:#fff;--line:#e3e3df;--accent:#2f8c72}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#141413;--fg:#ececea;--muted:#9a9a94;--card:#1d1d1b;--line:#2c2c29;--accent:#5cc7a5}}
@@ -18,14 +19,20 @@ form{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px 
 button{padding:10px 16px;border:0;border-radius:8px;background:var(--accent);color:#fff;font-weight:600;cursor:pointer}button:disabled{opacity:.5}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}.chips button{background:var(--card);color:var(--fg);border:1px solid var(--line);font-weight:500;font-size:13px;padding:6px 10px}
 #jserr{border-color:#c0392b;color:#c0392b}
+header{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+header img{height:44px;border-radius:6px;background:#fff;padding:2px}header .t h1{margin:0}header .t .by{font-size:13px;color:var(--muted)}
+header .t .by a,footer a{color:var(--accent);text-decoration:none}header .t .by a:hover,footer a:hover{text-decoration:underline}
+footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);line-height:1.7}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.7/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js"></script>
 </head><body><main>
-<h1>memdb-oracle</h1>
+<header><a href="https://two-techies.com/" target="_blank" rel="noopener"><img src="/logo.png" alt="Two Techies"></a><div class="t"><h1>memdb-oracle</h1><div class="by">by <a href="https://www.linkedin.com/in/sunnysahijwani/" target="_blank" rel="noopener">Sunny Sahijwani</a>, <a href="https://two-techies.com/" target="_blank" rel="noopener">Two Techies</a> · an agent over an independent in-memory database benchmark</div></div></header>
 <p class="sub">Answers about Redis, Valkey, Dragonfly, KeyDB and Garnet from 478 measured benchmark runs (Sanity dataset, GROQ) and a Knowledge Base that shows vendor claims next to measurements. Every answer ends with the GROQ it ran. A turn takes 30–60 s: it is several Sanity Context calls plus reasoning; tool activity streams while you wait.</p>
 <div class="chips" id="chips"></div>
 <div id="log"></div>
+<footer>Numbers come only from GROQ over 478 measured runs in a public <a href="https://memdb-oracle.sanity.studio/" target="_blank" rel="noopener">Sanity dataset</a>; explanations and vendor claims only from a Sanity Context Knowledge Base, cited per sentence. Anything explained from general knowledge is labelled as such.<br>
+<a href="https://two-techies.com/blog/dragonfly-vs-redis-valkey-benchmark" target="_blank" rel="noopener">Read the benchmark series</a> · <a href="https://github.com/sunnysahijwani/dragonfly-redis-valkey-benchmark" target="_blank" rel="noopener">Rerun the benchmark</a> · <a href="https://github.com/sunnysahijwani/memdb-oracle" target="_blank" rel="noopener">Agent source (MIT)</a> · Built for the <a href="https://dev.to/challenges/sanity-2026-09-16" target="_blank" rel="noopener">Sanity Challenge</a> with Sanity Context and the Claude API.</footer>
 </main>
 <form id="f" onsubmit="return false"><div class="row"><input id="q" placeholder="e.g. At 16 cores, read-heavy, pipeline 16, which has the lower p99: Dragonfly or Redis cluster?" autocomplete="off"><button id="b" type="submit">Ask</button></div></form>
 <script>
