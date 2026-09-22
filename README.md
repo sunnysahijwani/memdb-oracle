@@ -2,6 +2,8 @@
 
 An agent that answers questions about in-memory data stores — **Redis, Valkey, Dragonfly, KeyDB, Garnet** — only from measured data, and shows the vendor's claim next to the measurement when the two disagree.
 
+**Live demo:** https://memdb.two-techies.com · **Submission write-up:** https://dev.to/sunnysahijwani/memdb-oracle-an-agent-that-answers-redis-vs-dragonfly-questions-only-from-measured-data-26dl · **Curated transcripts:** [docs/TRANSCRIPTS.md](docs/TRANSCRIPTS.md)
+
 Built for the [Sanity Challenge, Path One](https://dev.to/challenges/sanity-2026-09-16) on top of an independent, reproducible benchmark: 48 bare-metal cores, pinned versions, raw data public ([harness + CSVs](https://github.com/sunnysahijwani/dragonfly-redis-valkey-benchmark), [7-part write-up](https://two-techies.com/blog/dragonfly-vs-redis-valkey-benchmark)).
 
 ## How it works
